@@ -12,7 +12,7 @@ const respondJSON = (request, response, status, object) => {
     'Content-Length': Buffer.byteLength(content, 'utf8'),
   });
 
-  if(request.method !== 'HEAD') {
+  if(request.method !== 'HEAD' && status !== 204) {
     response.write(JSON.stringify(object));
   }
 
@@ -28,6 +28,41 @@ const getUsers = (request, response) => {
 };
 
 const addUser = (request, response) => {
+
+  console.log('add User called');
+  const responseJSON = {
+    message: "NAme and age are both required"
+  };
+
+  const {name, age} = request.body;
+
+  if(!name || !age){
+    responseJSON.id = 'Missing Params';
+    return respondJSON(request,response,400,responseJSON);
+  }
+
+  let statusCode = 204;
+
+
+  if(!users[name]){
+    statusCode = 201;
+    users[name] = {
+      name:name
+    }
+  }
+
+  users[name].age = age;
+
+  //Created a user
+  if(statusCode === 201){
+    responseJSON.message = "User Successfully Created";
+    return respondJSON(request,response,statusCode,responseJSON);
+  }
+
+  //return 204 (no need to send body out we can send an empty object bacjk)
+  return respondJSON(request,response,statusCode,{});
+  console.log(name,age);
+
 
 };
 
