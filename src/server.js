@@ -17,7 +17,7 @@ const port = process.env.PORT || process.env.NODE_PORT || 3000;
 */
 const parseBody = (request,response,handler) => {
 
-  console.log("Parse Body");
+  //console.log("Parse Body");
   const body = [];
 
   // request.on() sets these up, it does not run them. Node calls them when the event happens,
@@ -42,10 +42,28 @@ const parseBody = (request,response,handler) => {
     // We now have the string "name=jp&age=40"
     const bodyString = Buffer.concat(body).toString();
 
+    const type = request.headers['content-type'];
+    //console.log(type);
+
+    if(type === 'application/x-www-form-urlencoded'){
+
+      request.body = query.parse(bodyString)
+
+    }else if(type ==='application/json'){
+      request.body = JSON.parse(bodyString);
+
+    }else{
+
+      response.writeHead(400, { 'Content-Type': 'application/json' });
+      response.write(JSON.stringify({ message: 'invalid data format', id: 'invalidFormat' }));
+      return response.end();     
+
+    }
+
     // Turn that text into an object and hang it on the request.
     // Nothing builds request.body for us, so this is the line that creates it.
     // Leave it out and addUser dies with "Cannot destructure property 'name' of 'request.body'"
-    request.body = query.parse(bodyString);
+    ;
 
     // The body is ready, so now it is safe to run the real handler.
     // Leave this out and the request just spins forever, because nothing ever responds.
@@ -54,7 +72,7 @@ const parseBody = (request,response,handler) => {
 };
 
 const handlePost = (request, response, parsedUrl) => {
-  console.log("handle post");
+  //console.log("handle post");
   if(parsedUrl.pathname === '/addUser'){
     // Our first try in class. It ran immediately, before the body had arrived,
     // so request.body did not exist yet and the server crashed.
@@ -67,7 +85,7 @@ const handlePost = (request, response, parsedUrl) => {
 };
 
 const handleGet = (request, response, parsedUrl) => {
-  console.log("handle get");
+  //console.log("handle get");
   if (parsedUrl.pathname === '/style.css') {
     htmlHandler.getCSS(request, response);
   } else if (parsedUrl.pathname === '/getUsers') {

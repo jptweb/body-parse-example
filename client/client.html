@@ -5,7 +5,7 @@
   <link rel="stylesheet" type="text/css" href="/style.css">
   
   <script>
-    const handleResponse = (response) => {
+    const handleResponse = async (response) => {
       const content = document.querySelector('#content');
       
       switch(response.status) {
@@ -25,10 +25,44 @@
           content.innerHTML = `Error code not implemented by client.`;
           break;
       }
+
+      const obj = await response.json();
+      if(obj.message){
+        content.innerHTML += `<p>${obj.message}</p>`;
+      }
       
     };
 
-    const sendPost = (nameForm) => {
+    const sendPost = async (nameForm) => {
+      const url = nameForm.getAttribute("action"); //"/addUser"
+      const method = nameForm.getAttribute("method"); //post
+
+      const name = nameForm.querySelector("#nameField").value;
+      const age = nameForm.querySelector("#ageField").value;
+
+      const dataType = nameForm.querySelector("#dataType").value;
+
+
+
+      let formData = `name=${name}&age=${age}`;
+
+      if(dataType === 'application/json'){
+        formData = JSON.stringify({name,age});
+      }
+
+      const response = await fetch(url,{
+        method,
+        headers: {
+          'Content-Type': dataType,
+          'Accept': 'application/json'
+        },
+        body: formData
+      });
+
+      handleResponse(response);
+
+
+
 
     };
 
@@ -44,7 +78,7 @@
       // Left off from Wednesday on purpose, so the form submits itself the browser's way
       // and we can watch that POST in the Network tab. We turn it back on Friday,
       // once sendPost above actually sends something.
-      //nameForm.addEventListener('submit', addUser);
+      nameForm.addEventListener('submit', addUser);
     };
 
     window.onload = init;
@@ -59,6 +93,12 @@
       <input id="nameField" type="text" name="name" />
       <label for="age">Age: </label>
       <input id="ageField" type="number" name="age" min="0" max="100" step="1"/>
+
+      <select name="dataType" id="dataType">
+        <option value="application/x-www-form-urlencoded">Url Encoded</option>
+        <option value="application/json">JSON</option>
+      </select>
+
       <input type="submit" value="Add User" />
     </form>
     <p>Go to <a href="/getUsers">/getUsers</a> to see users.</p>
